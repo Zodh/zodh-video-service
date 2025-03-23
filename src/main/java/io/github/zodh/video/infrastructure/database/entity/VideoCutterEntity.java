@@ -1,6 +1,7 @@
 package io.github.zodh.video.infrastructure.database.entity;
 
 import io.github.zodh.video.domain.model.video.SupportedVideoFormatEnum;
+import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,14 +14,8 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "video_cutter")
 public class VideoCutterEntity {
 
@@ -35,6 +30,10 @@ public class VideoCutterEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "video_cutter_format")
   private SupportedVideoFormatEnum format;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "video_cutter_processing_status")
+  private VideoProcessingStatusEnum processingStatus;
 
   @Column(name = "video_cutter_size_in_bytes")
   private Long sizeInBytes;
@@ -59,4 +58,112 @@ public class VideoCutterEntity {
     lastUpdateDateTime = LocalDateTime.now();
   }
 
+  public VideoCutterEntity(Long id, String name, VideoProcessingStatusEnum processingStatus,
+      String url, LocalDateTime creationDateTime) {
+    this.id = id;
+    this.name = name;
+    this.processingStatus = processingStatus;
+    this.url = url;
+    this.creationDateTime = creationDateTime;
+  }
+
+  public VideoCutterEntity(Long id, String name, SupportedVideoFormatEnum format,
+      VideoProcessingStatusEnum processingStatus, Long sizeInBytes, UUID userIdentifier,
+      String userEmail, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime,
+      String url) {
+    this.id = id;
+    this.name = name;
+    this.format = format;
+    this.processingStatus = processingStatus;
+    this.sizeInBytes = sizeInBytes;
+    this.userIdentifier = userIdentifier;
+    this.userEmail = userEmail;
+    this.creationDateTime = creationDateTime;
+    this.lastUpdateDateTime = lastUpdateDateTime;
+    this.url = url;
+  }
+
+  public VideoCutterEntity() {
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public SupportedVideoFormatEnum getFormat() {
+    return format;
+  }
+
+  public void setFormat(SupportedVideoFormatEnum format) {
+    this.format = format;
+  }
+
+  public VideoProcessingStatusEnum getProcessingStatus() {
+    return processingStatus;
+  }
+
+  public void setProcessingStatus(
+      VideoProcessingStatusEnum processingStatus) {
+    this.processingStatus = processingStatus;
+  }
+
+  public Long getSizeInBytes() {
+    return sizeInBytes;
+  }
+
+  public void setSizeInBytes(Long sizeInBytes) {
+    this.sizeInBytes = sizeInBytes;
+  }
+
+  public UUID getUserIdentifier() {
+    return userIdentifier;
+  }
+
+  public void setUserIdentifier(UUID userIdentifier) {
+    this.userIdentifier = userIdentifier;
+  }
+
+  public String getUserEmail() {
+    return userEmail;
+  }
+
+  public void setUserEmail(String userEmail) {
+    this.userEmail = userEmail;
+  }
+
+  public LocalDateTime getCreationDateTime() {
+    return creationDateTime;
+  }
+
+  public void setCreationDateTime(LocalDateTime creationDateTime) {
+    this.creationDateTime = creationDateTime;
+  }
+
+  public LocalDateTime getLastUpdateDateTime() {
+    return lastUpdateDateTime;
+  }
+
+  public void setLastUpdateDateTime(LocalDateTime lastUpdateDateTime) {
+    this.lastUpdateDateTime = lastUpdateDateTime;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
 }

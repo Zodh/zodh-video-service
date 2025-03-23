@@ -5,7 +5,7 @@ import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
 public enum SupportedVideoFormatEnum {
-  MP4(".mp4");
+  MP4("mp4");
 
   SupportedVideoFormatEnum(String extension) {
     this.extension = extension;

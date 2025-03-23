@@ -18,15 +18,17 @@ public class Video implements Validable {
   private final LocalDateTime creationDateTime;
   private final LocalDateTime lastUpdateDateTime;
   private String url;
+  private final VideoProcessingStatusEnum processingStatus;
 
-  public Video(Long identifier, String name, String format, Long sizeInBytes, User user, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime) {
+  public Video(Long identifier, String name, String format, Long sizeInBytes, User user, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime, VideoProcessingStatusEnum processingStatus) {
     this.identifier = identifier;
     this.name = name;
-    this.format = SupportedVideoFormatEnum.valueOf(format);
+    this.format = SupportedVideoFormatEnum.ofFormat(format);
     this.sizeInBytes = sizeInBytes;
     this.user = user;
     this.creationDateTime = creationDateTime;
     this.lastUpdateDateTime = lastUpdateDateTime;
+    this.processingStatus = processingStatus;
   }
 
   @Override
@@ -85,4 +87,9 @@ public class Video implements Validable {
   public String getUrl() {
     return url;
   }
+
+  public VideoProcessingStatusEnum getProcessingStatus() {
+    return processingStatus;
+  }
+
 }

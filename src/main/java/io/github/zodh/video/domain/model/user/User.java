@@ -9,21 +9,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class User implements Validable {
 
-  private Long identifier;
   private final String email;
   private final UUID externalUserIdentifier;
 
   public User(String email, UUID externalUserIdentifier) {
     this.email = email;
     this.externalUserIdentifier = externalUserIdentifier;
-  }
-
-  public void setIdentifier(Long identifier) {
-    this.identifier = identifier;
-  }
-
-  public Long getIdentifier() {
-    return identifier;
   }
 
   @Override
@@ -38,5 +29,11 @@ public class User implements Validable {
     return errors;
   }
 
+  public String getEmail() {
+    return email;
+  }
 
+  public UUID getExternalUserIdentifier() {
+    return externalUserIdentifier;
+  }
 }

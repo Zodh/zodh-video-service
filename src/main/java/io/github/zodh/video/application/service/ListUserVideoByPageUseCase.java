@@ -6,7 +6,11 @@ import io.github.zodh.video.application.model.list.GetUserVideoByPageResponse;
 
 public class ListUserVideoByPageUseCase {
 
-  private VideoRepositoryGateway videoRepositoryGateway;
+  private final VideoRepositoryGateway videoRepositoryGateway;
+
+  public ListUserVideoByPageUseCase(VideoRepositoryGateway videoRepositoryGateway) {
+    this.videoRepositoryGateway = videoRepositoryGateway;
+  }
 
   public GetUserVideoByPageResponse execute(GetUserVideoByPageRequest request) {
     return videoRepositoryGateway.getUserVideoByPage(request.page(), request.size(), request.userId());

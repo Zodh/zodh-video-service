@@ -7,7 +7,7 @@ import java.util.UUID;
 public interface VideoRepositoryGateway {
 
   Long save(VideoCutter videoCutter);
-  void saveUrl(String videoUrl);
+  void saveUrl(Long id, String videoUrl);
   GetUserVideoByPageResponse getUserVideoByPage(int page, int size, UUID userId);
 
 }
