@@ -5,6 +5,7 @@ import io.github.zodh.video.application.model.PageInformation;
 import io.github.zodh.video.application.model.list.GetUserVideoByPageResponse;
 import io.github.zodh.video.application.model.list.VideoBasicInfo;
 import io.github.zodh.video.domain.model.video.VideoCutter;
+import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
 import io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity;
 import io.github.zodh.video.infrastructure.database.repository.VideoCutterJpaRepository;
 import java.util.List;
@@ -37,6 +38,7 @@ public class VideoRepositoryJpaAdapter implements VideoRepositoryGateway {
         videoCutter.getVideo().getUser().getEmail(),
         videoCutter.getVideo().getCreationDateTime(),
         videoCutter.getVideo().getLastUpdateDateTime(),
+        null,
         null
     );
     VideoCutterEntity result = videoCutterJpaRepository.save(entity);
@@ -44,8 +46,8 @@ public class VideoRepositoryJpaAdapter implements VideoRepositoryGateway {
   }
 
   @Override
-  public void saveUrl(Long id, String videoUrl) {
-    videoCutterJpaRepository.updateVideoCutterUrl(id, videoUrl);
+  public void saveFileId(Long id, String fileId) {
+    videoCutterJpaRepository.updateVideoCutterUrl(id, fileId);
   }
 
   @Override
@@ -58,6 +60,11 @@ public class VideoRepositoryJpaAdapter implements VideoRepositoryGateway {
     PageInformation pageInformation = new PageInformation(result.getNumber() + 1, result.getSize(),
         result.getTotalPages(), result.getNumberOfElements());
     return new GetUserVideoByPageResponse(elements, pageInformation);
+  }
+
+  @Override
+  public void updateVideoStatus(String fileId, VideoProcessingStatusEnum processingStatus) {
+    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, processingStatus);
   }
 
 }

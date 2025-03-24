@@ -18,7 +18,7 @@ public class Video implements Validable {
   private final LocalDateTime creationDateTime;
   private final LocalDateTime lastUpdateDateTime;
   private String url;
-  private final VideoProcessingStatusEnum processingStatus;
+  private VideoProcessingStatusEnum processingStatus;
 
   public Video(Long identifier, String name, String format, Long sizeInBytes, User user, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime, VideoProcessingStatusEnum processingStatus) {
     this.identifier = identifier;
@@ -50,6 +50,10 @@ public class Video implements Validable {
 
   public void setIdentifier(Long identifier) {
     this.identifier = identifier;
+  }
+
+  public void updateStatus(VideoProcessingStatusEnum statusEnum) {
+    this.processingStatus = statusEnum;
   }
 
   public Long getIdentifier() {

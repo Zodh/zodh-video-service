@@ -2,6 +2,7 @@ package io.github.zodh.video.application.service;
 
 import io.github.zodh.video.application.gateway.VideoRepositoryGateway;
 import io.github.zodh.video.application.gateway.VideoUploaderGateway;
+import io.github.zodh.video.application.model.upload.GatewayUploadResponse;
 import io.github.zodh.video.application.model.upload.VideoUploadRequest;
 import io.github.zodh.video.application.model.upload.VideoUploadResponse;
 import io.github.zodh.video.domain.model.exception.ValidationErrorHandler;
@@ -37,10 +38,17 @@ public class VideoUploadUseCase {
 
     Long videoIdentifier = videoRepositoryGateway.save(videoCutter);
     video.setIdentifier(videoIdentifier);
-    String url = videoUploaderGateway.upload(videoCutter);
-    videoRepositoryGateway.saveUrl(video.getIdentifier(), url);
 
-    return new VideoUploadResponse("Video uploaded successfully! You'll receive emails about video processing soon!");
+    GatewayUploadResponse gatewayUploadResponse = videoUploaderGateway.generateUploadUrl(videoCutter, request.multipartFile());
+    videoRepositoryGateway.saveFileId(video.getIdentifier(), gatewayUploadResponse.fileId());
+    video.updateStatus(VideoProcessingStatusEnum.AWAITING_PROCESSING);
+    videoRepositoryGateway.updateVideoStatus(gatewayUploadResponse.fileId(), video.getProcessingStatus());
+
+    return new VideoUploadResponse(
+        String.format("Video upload request received successfully! Please, upload the video in the uploadUrl by using the indicated http method in the next %s.", gatewayUploadResponse.duration()),
+        gatewayUploadResponse.url(),
+        gatewayUploadResponse.method()
+    );
   }
 
 }

@@ -1,5 +1,6 @@
 package io.github.zodh.video.infrastructure.database.repository;
 
+import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
 import io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -15,13 +16,19 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
 
   @Modifying
   @Query(value = "UPDATE VideoCutterEntity vce "
-      + "SET vce.url = :url "
+      + "SET vce.fileId = :fileId "
       + "WHERE vce.id = :id")
-  void updateVideoCutterUrl(@Param("id") Long id, @Param("url") String url);
+  void updateVideoCutterUrl(@Param("id") Long id, @Param("fileId") String fileId);
 
   @Query(value = "SELECT new io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity(vce.id, vce.name, vce.processingStatus, vce.url, vce.creationDateTime) "
       + "FROM VideoCutterEntity vce "
       + "WHERE vce.userIdentifier = :userId")
   Page<VideoCutterEntity> fetchUserVideos(@Param("userId") UUID userId, Pageable pageable);
+
+  @Modifying
+  @Query(value = "UPDATE VideoCutterEntity vce "
+      + "SET vce.processingStatus = :status "
+      + "WHERE vce.fileId = :fileId")
+  void updateVideoCutterProcessingStatus(@Param("fileId") String fileId, @Param("status") VideoProcessingStatusEnum status);
 
 }

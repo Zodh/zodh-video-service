@@ -35,6 +35,9 @@
 
     <org.apache.commons.version>3.17.0</org.apache.commons.version>
     <io.commons.version>2.18.0</io.commons.version>
+    <com.amazonaws.version>1.12.782</com.amazonaws.version>
+    <io.awspring.cloud.version>3.3.0</io.awspring.cloud.version>
+    <software.amazon.awssdk.s3.version>2.31.6</software.amazon.awssdk.s3.version>
   </properties>
 
   <dependencies>
@@ -45,6 +48,30 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- AWS -->
+    <dependency>
+      <groupId>io.awspring.cloud</groupId>
+      <artifactId>spring-cloud-aws-dependencies</artifactId>
+      <version>${io.awspring.cloud.version}</version>
+      <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>io.awspring.cloud</groupId>
+      <artifactId>spring-cloud-aws-starter</artifactId>
+      <version>${io.awspring.cloud.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.awspring.cloud</groupId>
+      <artifactId>spring-cloud-aws-starter-s3</artifactId>
+      <version>${io.awspring.cloud.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>${software.amazon.awssdk.s3.version}</version>
+      <scope>compile</scope>
     </dependency>
 
     <dependency>

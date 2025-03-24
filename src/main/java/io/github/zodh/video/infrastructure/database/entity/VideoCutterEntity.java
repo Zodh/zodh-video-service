@@ -53,6 +53,9 @@ public class VideoCutterEntity {
   @Column(name = "video_cutter_url")
   private String url;
 
+  @Column(name = "video_cutter_file_id", unique = true)
+  private String fileId;
+
   @PreUpdate
   protected void onUpdate() {
     lastUpdateDateTime = LocalDateTime.now();
@@ -70,7 +73,8 @@ public class VideoCutterEntity {
   public VideoCutterEntity(Long id, String name, SupportedVideoFormatEnum format,
       VideoProcessingStatusEnum processingStatus, Long sizeInBytes, UUID userIdentifier,
       String userEmail, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime,
-      String url) {
+      String url,
+      String fileId) {
     this.id = id;
     this.name = name;
     this.format = format;
@@ -81,6 +85,7 @@ public class VideoCutterEntity {
     this.creationDateTime = creationDateTime;
     this.lastUpdateDateTime = lastUpdateDateTime;
     this.url = url;
+    this.fileId = fileId;
   }
 
   public VideoCutterEntity() {
@@ -165,5 +170,13 @@ public class VideoCutterEntity {
 
   public void setUrl(String url) {
     this.url = url;
+  }
+
+  public String getFileId() {
+    return fileId;
+  }
+
+  public void setFileId(String fileId) {
+    this.fileId = fileId;
   }
 }
