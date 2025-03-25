@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +28,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 @Slf4j
 @Component
-public class VideoFileManagerS3Adapter implements VideoFileManagerGateway {
+public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
 
   @Value("${video.bucket-name}")
   private String bucketName;
@@ -41,7 +40,7 @@ public class VideoFileManagerS3Adapter implements VideoFileManagerGateway {
   private final VideoCutterJpaRepository videoCutterJpaRepository;
 
   @Autowired
-  public VideoFileManagerS3Adapter(AwsVideoServiceConfig s3Config, VideoCutterJpaRepository videoCutterJpaRepository) {
+  public VideoFileManagerAWSAdapter(AwsVideoServiceConfig s3Config, VideoCutterJpaRepository videoCutterJpaRepository) {
     this.s3Presigner = s3Config.getPreSigner();
     this.videoCutterJpaRepository = videoCutterJpaRepository;
   }
@@ -81,6 +80,7 @@ public class VideoFileManagerS3Adapter implements VideoFileManagerGateway {
   @SqsListener("${video.status.update.queue-name}")
   public void receiveStatusUpdate(Message<String> queueMessage) {
     try {
+      // TODO: verify if payload came from bucket or video processor. Actually only read from bucket. Criado em: 25/03/2025 ás 02:42:49.
       JSONObject messageAsJson = new JSONObject(queueMessage.getPayload());
       JSONObject payloadAsJson = new JSONObject(messageAsJson.getString("Message"));
       String fileId = payloadAsJson.getJSONArray("Records")
