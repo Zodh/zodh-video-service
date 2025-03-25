@@ -38,6 +38,7 @@
     <com.amazonaws.version>1.12.782</com.amazonaws.version>
     <io.awspring.cloud.version>3.3.0</io.awspring.cloud.version>
     <software.amazon.awssdk.s3.version>2.31.6</software.amazon.awssdk.s3.version>
+    <org.json.version>20250107</org.json.version>
   </properties>
 
   <dependencies>
@@ -65,6 +66,11 @@
     <dependency>
       <groupId>io.awspring.cloud</groupId>
       <artifactId>spring-cloud-aws-starter-s3</artifactId>
+      <version>${io.awspring.cloud.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.awspring.cloud</groupId>
+      <artifactId>spring-cloud-aws-starter-sqs</artifactId>
       <version>${io.awspring.cloud.version}</version>
     </dependency>
     <dependency>
@@ -96,11 +102,15 @@
       <artifactId>commons-lang3</artifactId>
       <version>${org.apache.commons.version}</version>
     </dependency>
-
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${io.commons.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>${org.json.version}</version>
     </dependency>
   </dependencies>
 

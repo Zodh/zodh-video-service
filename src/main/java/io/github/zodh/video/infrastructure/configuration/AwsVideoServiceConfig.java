@@ -1,5 +1,8 @@
 package io.github.zodh.video.infrastructure.configuration;
 
+import io.awspring.cloud.sqs.listener.QueueNotFoundStrategy;
+import io.awspring.cloud.sqs.operations.SqsTemplate;
+import java.net.URI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,9 +12,10 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 
 @Configuration
-public class AwsS3Config {
+public class AwsVideoServiceConfig {
 
   @Value("${spring.cloud.aws.region.static}")
   private String region;
@@ -21,8 +25,10 @@ public class AwsS3Config {
   private String secretKey;
   @Value("${spring.cloud.aws.credentials.session.token}")
   private String sessionToken;
+  @Value("${video.status.uodate.queue-url}")
+  private String queueUrl;
 
-  public AwsS3Config() {
+  public AwsVideoServiceConfig() {
   }
 
   @Bean
@@ -41,6 +47,24 @@ public class AwsS3Config {
         .region(Region.of(region))
         .credentialsProvider(awsCredentialsProvider)
         .s3Client(getClient())
+        .build();
+  }
+
+  @Bean
+  public SqsTemplate sqsTemplate(SqsAsyncClient sqsAsyncClient) {
+    return SqsTemplate.builder()
+        .sqsAsyncClient(sqsAsyncClient)
+        .configure(o -> o.queueNotFoundStrategy(QueueNotFoundStrategy.FAIL))
+        .build();
+  }
+
+  @Bean
+  public SqsAsyncClient sqsAsyncClient() {
+    AwsSessionCredentials credentials = AwsSessionCredentials.create(accessKey, secretKey, sessionToken);
+    return SqsAsyncClient.builder()
+        .credentialsProvider( StaticCredentialsProvider.create(credentials))
+        .region(Region.of(region))
+        .endpointOverride(URI.create(queueUrl))
         .build();
   }
 

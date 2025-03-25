@@ -8,7 +8,7 @@ import io.github.zodh.video.application.model.upload.VideoUploadResponse;
 import io.github.zodh.video.application.service.ListUserVideoByPageUseCase;
 import io.github.zodh.video.application.service.VideoUploadUseCase;
 import io.github.zodh.video.infrastructure.adapters.VideoRepositoryJpaAdapter;
-import io.github.zodh.video.infrastructure.adapters.VideoUploaderS3Adapter;
+import io.github.zodh.video.infrastructure.adapters.VideoFileManagerS3Adapter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import org.apache.commons.io.FilenameUtils;
@@ -30,7 +30,7 @@ public class VideoApi {
 
   private final VideoController videoController;
 
-  public VideoApi(VideoRepositoryJpaAdapter videoRepositoryJpaAdapter, VideoUploaderS3Adapter videoUploaderS3Adapter) {
+  public VideoApi(VideoRepositoryJpaAdapter videoRepositoryJpaAdapter, VideoFileManagerS3Adapter videoUploaderS3Adapter) {
     VideoUploadUseCase videoUploadUseCase = new VideoUploadUseCase(videoRepositoryJpaAdapter, videoUploaderS3Adapter);
     ListUserVideoByPageUseCase listUserVideoByPageUseCase = new ListUserVideoByPageUseCase(videoRepositoryJpaAdapter);
     this.videoController = new VideoController(videoUploadUseCase, listUserVideoByPageUseCase);

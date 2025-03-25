@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -16,7 +17,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "video_cutter")
+@Table(
+    name = "video_cutter",
+    indexes = {
+        @Index(name = "idx_creation_status", columnList = "video_cutter_creation_date_time, video_cutter_processing_status"),
+        @Index(name = "idx_video_user", columnList = "video_cutter_user_id")
+    }
+)
 public class VideoCutterEntity {
 
   @Id

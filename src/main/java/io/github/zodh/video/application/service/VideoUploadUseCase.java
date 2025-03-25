@@ -1,7 +1,7 @@
 package io.github.zodh.video.application.service;
 
 import io.github.zodh.video.application.gateway.VideoRepositoryGateway;
-import io.github.zodh.video.application.gateway.VideoUploaderGateway;
+import io.github.zodh.video.application.gateway.VideoFileManagerGateway;
 import io.github.zodh.video.application.model.upload.GatewayUploadResponse;
 import io.github.zodh.video.application.model.upload.VideoUploadRequest;
 import io.github.zodh.video.application.model.upload.VideoUploadResponse;
@@ -17,37 +17,37 @@ import java.util.LinkedList;
 public class VideoUploadUseCase {
 
   private final VideoRepositoryGateway videoRepositoryGateway;
-  private final VideoUploaderGateway videoUploaderGateway;
+  private final VideoFileManagerGateway videoFileManagerGateway;
 
   public VideoUploadUseCase(VideoRepositoryGateway videoRepositoryGateway,
-      VideoUploaderGateway videoUploaderGateway) {
+      VideoFileManagerGateway videoFileManagerGateway) {
     this.videoRepositoryGateway = videoRepositoryGateway;
-    this.videoUploaderGateway = videoUploaderGateway;
+    this.videoFileManagerGateway = videoFileManagerGateway;
   }
 
   public VideoUploadResponse execute(VideoUploadRequest request) {
     User user = new User(request.email(), request.userId());
     LinkedList<Error> userErrors = user.validate();
     ValidationErrorHandler.throwValidationExceptionIfHasErrors("user", userErrors);
-    Video video = new Video(null, request.videoName(), request.format(), request.sizeInBytes(), user, LocalDateTime.now(), LocalDateTime.now(), VideoProcessingStatusEnum.UPLOADING);
+    Video video = new Video(null, request.videoName(), request.format(), request.sizeInBytes(), user, LocalDateTime.now(), LocalDateTime.now(), VideoProcessingStatusEnum.RECEIVING);
     LinkedList<Error> videoErrors = video.validate();
     ValidationErrorHandler.throwValidationExceptionIfHasErrors("video", videoErrors);
     VideoCutter videoCutter = new VideoCutter(video, request.cutIntervalInSeconds());
     LinkedList<Error> videoCutterErrors = videoCutter.validate();
     ValidationErrorHandler.throwValidationExceptionIfHasErrors("videoCutter", videoCutterErrors);
 
-    Long videoIdentifier = videoRepositoryGateway.save(videoCutter);
-    video.setIdentifier(videoIdentifier);
+    Long videoId = videoRepositoryGateway.save(videoCutter);
+    video.setIdentifier(videoId);
 
-    GatewayUploadResponse gatewayUploadResponse = videoUploaderGateway.generateUploadUrl(videoCutter, request.multipartFile());
-    videoRepositoryGateway.saveFileId(video.getIdentifier(), gatewayUploadResponse.fileId());
-    video.updateStatus(VideoProcessingStatusEnum.AWAITING_PROCESSING);
-    videoRepositoryGateway.updateVideoStatus(gatewayUploadResponse.fileId(), video.getProcessingStatus());
+    GatewayUploadResponse uploadResponse = videoFileManagerGateway.generateUploadUrl(videoCutter, request.multipartFile());
+    videoRepositoryGateway.saveFileId(video.getIdentifier(), uploadResponse.fileId());
+    video.updateStatus(VideoProcessingStatusEnum.AWAITING_UPLOAD);
+    videoRepositoryGateway.updateVideoStatus(uploadResponse.fileId(), video.getProcessingStatus());
 
     return new VideoUploadResponse(
-        String.format("Video upload request received successfully! Please, upload the video in the uploadUrl by using the indicated http method in the next %s.", gatewayUploadResponse.duration()),
-        gatewayUploadResponse.url(),
-        gatewayUploadResponse.method()
+        String.format("Video upload request received successfully! Please, upload the video in the following URL by using the indicated http method in the next %s.", uploadResponse.duration()),
+        uploadResponse.url(),
+        uploadResponse.method()
     );
   }
 

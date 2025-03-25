@@ -2,6 +2,8 @@ package io.github.zodh.video.infrastructure.database.repository;
 
 import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
 import io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +24,8 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
 
   @Query(value = "SELECT new io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity(vce.id, vce.name, vce.processingStatus, vce.url, vce.creationDateTime) "
       + "FROM VideoCutterEntity vce "
-      + "WHERE vce.userIdentifier = :userId")
+      + "WHERE vce.userIdentifier = :userId "
+      + "AND vce.processingStatus <> 'VIDEO_NOT_UPLOADED_BY_USER' ")
   Page<VideoCutterEntity> fetchUserVideos(@Param("userId") UUID userId, Pageable pageable);
 
   @Modifying
@@ -30,5 +33,17 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
       + "SET vce.processingStatus = :status "
       + "WHERE vce.fileId = :fileId")
   void updateVideoCutterProcessingStatus(@Param("fileId") String fileId, @Param("status") VideoProcessingStatusEnum status);
+
+  @Query(value = "SELECT vce.id "
+      + "FROM VideoCutterEntity vce "
+      + "WHERE vce.processingStatus = 'AWAITING_UPLOAD' "
+      + "AND vce.creationDateTime <= :minutesAgo")
+  List<Long> fetchVideosNotUploadedInMinutes(@Param("minutesAgo") LocalDateTime minutesAgo);
+
+  @Modifying
+  @Query(value = "UPDATE VideoCutterEntity vce "
+      + "SET vce.processingStatus = 'VIDEO_NOT_UPLOADED_BY_USER' "
+      + "WHERE vce.id IN (:videoIds)")
+  void invalidateVideosToUpload(@Param("videoIds") List<Long> videoIds);
 
 }
