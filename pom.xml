@@ -79,6 +79,11 @@
       <version>${software.amazon.awssdk.s3.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3-event-notifications</artifactId>
+      <version>${software.amazon.awssdk.s3.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.postgresql</groupId>

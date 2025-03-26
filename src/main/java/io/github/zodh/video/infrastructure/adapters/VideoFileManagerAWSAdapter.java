@@ -1,27 +1,34 @@
 package io.github.zodh.video.infrastructure.adapters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import io.github.zodh.video.application.gateway.VideoFileManagerGateway;
 import io.github.zodh.video.application.model.upload.GatewayUploadResponse;
 import io.github.zodh.video.domain.model.video.VideoCutter;
 import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
+import io.github.zodh.video.infrastructure.adapters.dto.VideoStatusUpdateMessage;
+import io.github.zodh.video.infrastructure.adapters.exception.InvalidStatusUpdateMessage;
 import io.github.zodh.video.infrastructure.configuration.AwsVideoServiceConfig;
 import io.github.zodh.video.infrastructure.database.repository.VideoCutterJpaRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.Message;
+import software.amazon.awssdk.services.sqs.model.Message;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.eventnotifications.s3.model.S3EventNotification;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -38,11 +45,13 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
   private int uploadExpirationTime;
   private final S3Presigner s3Presigner;
   private final VideoCutterJpaRepository videoCutterJpaRepository;
+  private final ObjectMapper objectMapper;
 
   @Autowired
-  public VideoFileManagerAWSAdapter(AwsVideoServiceConfig s3Config, VideoCutterJpaRepository videoCutterJpaRepository) {
+  public VideoFileManagerAWSAdapter(AwsVideoServiceConfig s3Config, VideoCutterJpaRepository videoCutterJpaRepository, ObjectMapper objectMapper) {
     this.s3Presigner = s3Config.getPreSigner();
     this.videoCutterJpaRepository = videoCutterJpaRepository;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -78,19 +87,43 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
 
   @Transactional
   @SqsListener("${video.status.update.queue-name}")
-  public void receiveStatusUpdate(Message<String> queueMessage) {
+  public void receiveStatusUpdate(Message queueMessage) {
     try {
-      // TODO: verify if payload came from bucket or video processor. Actually only read from bucket. Criado em: 25/03/2025 ás 02:42:49.
-      JSONObject messageAsJson = new JSONObject(queueMessage.getPayload());
-      JSONObject payloadAsJson = new JSONObject(messageAsJson.getString("Message"));
-      String fileId = payloadAsJson.getJSONArray("Records")
-          .getJSONObject(0)
-          .getJSONObject("s3")
-          .getJSONObject("object")
-          .getString("key");
-      videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, VideoProcessingStatusEnum.AWAITING_PROCESSING);
+      VideoStatusUpdateMessage videoStatusUpdateMessageByUpload = parseDefaultUploadMessage(queueMessage.body());
+      VideoStatusUpdateMessage videoStatusUpdateMessageByPublisher = parsePublishedMessage(queueMessage.body());
+      VideoStatusUpdateMessage videoStatusUpdateMessage = Stream.of(videoStatusUpdateMessageByUpload, videoStatusUpdateMessageByPublisher).filter(vsu -> Objects.nonNull(vsu) && StringUtils.isNotBlank(vsu.fileId())).findFirst().orElseThrow(InvalidStatusUpdateMessage::new);
+      if (videoStatusUpdateMessage.status() == VideoProcessingStatusEnum.FINISHED && StringUtils.isNotBlank(videoStatusUpdateMessage.url())) {
+        videoCutterJpaRepository.updateVideoCutterUrl(videoStatusUpdateMessage.url(), videoStatusUpdateMessage.fileId());
+      }
+      videoCutterJpaRepository.updateVideoCutterProcessingStatus(videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status());
     } catch (Exception e) {
       log.error("Error trying to process file update message!");
+    }
+  }
+
+  private VideoStatusUpdateMessage parseDefaultUploadMessage(String msg) {
+    try {
+      S3EventNotification eventNotification = S3EventNotification.fromJson(new JSONObject(msg).getString("Message"));
+      return new VideoStatusUpdateMessage(
+          eventNotification.getRecords().stream()
+              .findFirst()
+              .orElseThrow(InvalidStatusUpdateMessage::new)
+              .getS3()
+              .getObject()
+              .getKey(),
+          VideoProcessingStatusEnum.AWAITING_PROCESSING,
+          null
+      );
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  private VideoStatusUpdateMessage parsePublishedMessage(String message) {
+    try {
+      return this.objectMapper.readValue(message, VideoStatusUpdateMessage.class);
+    } catch (Exception e) {
+      return null;
     }
   }
 

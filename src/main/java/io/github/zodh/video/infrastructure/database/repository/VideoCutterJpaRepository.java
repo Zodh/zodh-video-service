@@ -46,4 +46,10 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
       + "WHERE vce.id IN (:videoIds)")
   void invalidateVideosToUpload(@Param("videoIds") List<Long> videoIds);
 
+  @Modifying
+  @Query(value = "UPDATE VideoCutterEntity vce "
+      + "SET vce.url = :url "
+      + "WHERE vce.fileId = :fileId")
+  void updateVideoCutterUrl(@Param("url") String url, @Param("fileId") String fileId);
+
 }
