@@ -92,10 +92,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
       VideoStatusUpdateMessage videoStatusUpdateMessageByUpload = parseDefaultUploadMessage(queueMessage.body());
       VideoStatusUpdateMessage videoStatusUpdateMessageByPublisher = parsePublishedMessage(queueMessage.body());
       VideoStatusUpdateMessage videoStatusUpdateMessage = Stream.of(videoStatusUpdateMessageByUpload, videoStatusUpdateMessageByPublisher).filter(vsu -> Objects.nonNull(vsu) && StringUtils.isNotBlank(vsu.fileId())).findFirst().orElseThrow(InvalidStatusUpdateMessage::new);
-      if (videoStatusUpdateMessage.status() == VideoProcessingStatusEnum.FINISHED && StringUtils.isNotBlank(videoStatusUpdateMessage.url())) {
-        videoCutterJpaRepository.updateVideoCutterUrl(videoStatusUpdateMessage.url(), videoStatusUpdateMessage.fileId());
-      }
-      videoCutterJpaRepository.updateVideoCutterProcessingStatus(videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status());
+      updateVideoProcessingStatus(videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status(), videoStatusUpdateMessage.url());
     } catch (Exception e) {
       log.error("Error trying to process file update message!");
     }
@@ -129,8 +126,11 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
 
 
   @Override
-  public void updateUploadedVideoStatus(String fileId) {
-    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, VideoProcessingStatusEnum.AWAITING_PROCESSING);
+  public void updateVideoProcessingStatus(String fileId, VideoProcessingStatusEnum status, String url) {
+    if (status == VideoProcessingStatusEnum.FINISHED && StringUtils.isNotBlank(url)) {
+      videoCutterJpaRepository.updateVideoCutterUrl(url, fileId);
+    }
+    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, status);
   }
 
   private Duration maxUploadDuration() {
