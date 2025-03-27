@@ -93,6 +93,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
       VideoStatusUpdateMessage videoStatusUpdateMessageByPublisher = parsePublishedMessage(queueMessage.body());
       VideoStatusUpdateMessage videoStatusUpdateMessage = Stream.of(videoStatusUpdateMessageByUpload, videoStatusUpdateMessageByPublisher).filter(vsu -> Objects.nonNull(vsu) && StringUtils.isNotBlank(vsu.fileId())).findFirst().orElseThrow(InvalidStatusUpdateMessage::new);
       updateVideoProcessingStatus(videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status(), videoStatusUpdateMessage.url());
+      log.info("Video {} updated to status {} successfully!", videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status());
     } catch (Exception e) {
       log.error("Error trying to process file update message!");
     }
