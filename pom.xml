@@ -43,10 +43,17 @@
     <org.apache.commons.version>3.17.0</org.apache.commons.version>
     <io.commons.version>2.18.0</io.commons.version>
     <org.json.version>20250107</org.json.version>
+    <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
     <org.projectlombok.version>1.18.36</org.projectlombok.version>
+
+    <!-- JaCoCo -->
+    <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+    <jacoco.unit-tests.limit.instruction-ratio>80%</jacoco.unit-tests.limit.instruction-ratio>
+    <jacoco.unit-tests.limit.branch-ratio>80%</jacoco.unit-tests.limit.branch-ratio>
   </properties>
 
   <dependencies>
+    <!-- Starters -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -54,6 +61,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!-- AWS -->
@@ -89,22 +101,12 @@
       <artifactId>s3-event-notifications</artifactId>
       <version>${software.amazon.awssdk.s3.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${org.projectlombok.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
+
 
     <!-- General Dependencies -->
     <dependency>
@@ -121,6 +123,23 @@
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${org.json.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${org.projectlombok.version}</version>
+    </dependency>
+
+    <!-- Test Dependencies -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -145,6 +164,61 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <!-- Runner Code -->
+            <exclude>
+              io/github/zodh/processor/ProcessorApplication.class
+            </exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <id>pre-unit-test</id>
+          </execution>
+          <execution>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>post-unit-test</id>
+            <phase>test</phase>
+          </execution>
+          <execution>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <minimum>${jacoco.unit-tests.limit.instruction-ratio}</minimum>
+                      <value>COVEREDRATIO</value>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <minimum>${jacoco.unit-tests.limit.branch-ratio}</minimum>
+                      <value>COVEREDRATIO</value>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <id>check-unit-tests</id>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>${jacoco-maven-plugin.version}</version>
       </plugin>
     </plugins>
   </build>
