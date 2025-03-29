@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Video implements Validable {
 
-  private Long identifier;
   private final String name;
   private final SupportedVideoFormatEnum format;
   private final Long sizeInBytes;
@@ -20,8 +19,7 @@ public class Video implements Validable {
   private String url;
   private VideoProcessingStatusEnum processingStatus;
 
-  public Video(Long identifier, String name, String format, Long sizeInBytes, User user, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime, VideoProcessingStatusEnum processingStatus) {
-    this.identifier = identifier;
+  public Video(String name, String format, Long sizeInBytes, User user, LocalDateTime creationDateTime, LocalDateTime lastUpdateDateTime, VideoProcessingStatusEnum processingStatus) {
     this.name = name;
     this.format = SupportedVideoFormatEnum.ofFormat(format);
     this.sizeInBytes = sizeInBytes;
@@ -48,16 +46,8 @@ public class Video implements Validable {
     return errors;
   }
 
-  public void setIdentifier(Long identifier) {
-    this.identifier = identifier;
-  }
-
   public void updateStatus(VideoProcessingStatusEnum statusEnum) {
     this.processingStatus = statusEnum;
-  }
-
-  public Long getIdentifier() {
-    return identifier;
   }
 
   public String getName() {

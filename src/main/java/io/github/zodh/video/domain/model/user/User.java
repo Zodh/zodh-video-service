@@ -7,15 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
-public class User implements Validable {
-
-  private final String email;
-  private final UUID externalUserIdentifier;
-
-  public User(String email, UUID externalUserIdentifier) {
-    this.email = email;
-    this.externalUserIdentifier = externalUserIdentifier;
-  }
+public record User(String email, UUID externalUserIdentifier) implements Validable {
 
   @Override
   public LinkedList<Error> validate() {
@@ -24,16 +16,9 @@ public class User implements Validable {
       errors.add(new Error("email", "Email not valid!"));
     }
     if (Objects.isNull(externalUserIdentifier)) {
-      errors.add(new Error("externalUserIdentifier", "Every user must have an external identifier informed!"));
+      errors.add(new Error("externalUserIdentifier",
+          "Every user must have an external identifier informed!"));
     }
     return errors;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public UUID getExternalUserIdentifier() {
-    return externalUserIdentifier;
   }
 }

@@ -29,18 +29,18 @@ public class VideoUploadUseCase {
     User user = new User(request.email(), request.userId());
     LinkedList<Error> userErrors = user.validate();
     ValidationErrorHandler.throwValidationExceptionIfHasErrors("user", userErrors);
-    Video video = new Video(null, request.videoName(), request.format(), request.sizeInBytes(), user, LocalDateTime.now(), LocalDateTime.now(), VideoProcessingStatusEnum.RECEIVING);
+    Video video = new Video( request.videoName(), request.format(), request.sizeInBytes(), user, LocalDateTime.now(), LocalDateTime.now(), VideoProcessingStatusEnum.RECEIVING);
     LinkedList<Error> videoErrors = video.validate();
     ValidationErrorHandler.throwValidationExceptionIfHasErrors("video", videoErrors);
     VideoCutter videoCutter = new VideoCutter(video, request.cutIntervalInSeconds());
     LinkedList<Error> videoCutterErrors = videoCutter.validate();
     ValidationErrorHandler.throwValidationExceptionIfHasErrors("videoCutter", videoCutterErrors);
 
-    Long videoId = videoRepositoryGateway.save(videoCutter);
-    video.setIdentifier(videoId);
+    Long videoCutterId = videoRepositoryGateway.save(videoCutter);
+    videoCutter.setIdentifier(videoCutterId);
 
     GatewayUploadResponse uploadResponse = videoFileManagerGateway.generateUploadUrl(videoCutter, request.multipartFile());
-    videoRepositoryGateway.saveFileId(video.getIdentifier(), uploadResponse.fileId());
+    videoRepositoryGateway.saveFileId(videoCutter.getIdentifier(), uploadResponse.fileId());
     video.updateStatus(VideoProcessingStatusEnum.AWAITING_UPLOAD);
     videoRepositoryGateway.updateVideoStatus(uploadResponse.fileId(), video.getProcessingStatus());
 
