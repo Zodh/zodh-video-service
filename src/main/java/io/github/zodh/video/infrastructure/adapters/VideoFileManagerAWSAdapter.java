@@ -81,7 +81,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
   public void invalidateNotUploadedVideos() {
     List<Long> videosToInvalidate = videoCutterJpaRepository.fetchVideosNotUploadedInMinutes(LocalDateTime.now().minusMinutes(uploadExpirationTime));
     if (!CollectionUtils.isEmpty(videosToInvalidate)) {
-      videoCutterJpaRepository.invalidateVideosToUpload(videosToInvalidate);
+      videoCutterJpaRepository.invalidateVideosToUpload(videosToInvalidate, LocalDateTime.now());
     }
   }
 
@@ -129,9 +129,9 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
   @Override
   public void updateVideoProcessingStatus(String fileId, VideoProcessingStatusEnum status, String url) {
     if (status == VideoProcessingStatusEnum.FINISHED && StringUtils.isNotBlank(url)) {
-      videoCutterJpaRepository.updateVideoCutterUrl(url, fileId);
+      videoCutterJpaRepository.updateVideoCutterUrl(url, fileId, LocalDateTime.now());
     }
-    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, status);
+    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, status, LocalDateTime.now());
   }
 
   private Duration maxUploadDuration() {

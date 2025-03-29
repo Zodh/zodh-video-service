@@ -30,9 +30,10 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
 
   @Modifying
   @Query(value = "UPDATE VideoCutterEntity vce "
-      + "SET vce.processingStatus = :status "
+      + "SET vce.processingStatus = :status,"
+      + "vce.lastUpdateDateTime = :updateDateTime "
       + "WHERE vce.fileId = :fileId")
-  void updateVideoCutterProcessingStatus(@Param("fileId") String fileId, @Param("status") VideoProcessingStatusEnum status);
+  void updateVideoCutterProcessingStatus(@Param("fileId") String fileId, @Param("status") VideoProcessingStatusEnum status, @Param("updateDateTime") LocalDateTime updateDateTime);
 
   @Query(value = "SELECT vce.id "
       + "FROM VideoCutterEntity vce "
@@ -42,14 +43,16 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
 
   @Modifying
   @Query(value = "UPDATE VideoCutterEntity vce "
-      + "SET vce.processingStatus = 'VIDEO_NOT_UPLOADED_BY_USER' "
+      + "SET vce.processingStatus = 'VIDEO_NOT_UPLOADED_BY_USER', "
+      + "vce.lastUpdateDateTime = :updateDateTime "
       + "WHERE vce.id IN (:videoIds)")
-  void invalidateVideosToUpload(@Param("videoIds") List<Long> videoIds);
+  void invalidateVideosToUpload(@Param("videoIds") List<Long> videoIds, @Param("updateDateTime") LocalDateTime updateDateTime);
 
   @Modifying
   @Query(value = "UPDATE VideoCutterEntity vce "
-      + "SET vce.url = :url "
+      + "SET vce.url = :url,"
+      + "vce.lastUpdateDateTime = :updateDateTime "
       + "WHERE vce.fileId = :fileId")
-  void updateVideoCutterUrl(@Param("url") String url, @Param("fileId") String fileId);
+  void updateVideoCutterUrl(@Param("url") String url, @Param("fileId") String fileId, @Param("updateDateTime") LocalDateTime updateDateTime);
 
 }

@@ -8,6 +8,7 @@ import io.github.zodh.video.domain.model.video.VideoCutter;
 import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
 import io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity;
 import io.github.zodh.video.infrastructure.database.repository.VideoCutterJpaRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -64,7 +65,8 @@ public class VideoRepositoryJpaAdapter implements VideoRepositoryGateway {
 
   @Override
   public void updateVideoStatus(String fileId, VideoProcessingStatusEnum processingStatus) {
-    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, processingStatus);
+    videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, processingStatus,
+        LocalDateTime.now());
   }
 
 }

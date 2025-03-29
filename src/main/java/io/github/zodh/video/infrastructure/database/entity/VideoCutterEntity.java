@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -62,11 +61,6 @@ public class VideoCutterEntity {
 
   @Column(name = "video_cutter_file_id", unique = true)
   private String fileId;
-
-  @PreUpdate
-  protected void onUpdate() {
-    lastUpdateDateTime = LocalDateTime.now();
-  }
 
   public VideoCutterEntity(Long id, String name, VideoProcessingStatusEnum processingStatus,
       String url, LocalDateTime creationDateTime) {
