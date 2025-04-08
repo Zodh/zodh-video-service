@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zodh-video-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zodh-video-service
+  template:
+    metadata:
+      labels:
+        app: zodh-video-service
+    spec:
+      containers:
+        - name: zodh-video-service
+          image: zodh/zodh-video-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: VIDEO_DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-secret
+                  key: VIDEO_DATABASE_USER
+            - name: VIDEO_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-secret
+                  key: VIDEO_DATABASE_PASSWORD
+            - name: VIDEO_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-secret
+                  key: VIDEO_DATABASE_URL
+            - name: VIDEO_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-secret
+                  key: VIDEO_BUCKET_NAME
+            - name: VIDEO_STATUS_UPDATE_QUEUE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-secret
+                  key: VIDEO_STATUS_UPDATE_QUEUE_NAME
+            - name: VIDEO_STATUS_UPDATE_QUEUE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-secret
+                  key: VIDEO_STATUS_UPDATE_QUEUE_URL
+            - name: SPRING_PROFILES_ACTIVE
+              value: "dev"
