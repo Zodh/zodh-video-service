@@ -6,7 +6,6 @@ import java.net.URI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -33,19 +32,17 @@ public class AwsVideoServiceConfig {
 
   @Bean
   public S3Client getClient() {
-    AwsCredentialsProvider awsCredentialsProvider = StaticCredentialsProvider.create(AwsSessionCredentials.create(accessKey, secretKey, sessionToken));
     return S3Client.builder()
         .region(Region.of(region))
-        .credentialsProvider(awsCredentialsProvider)
+        .credentialsProvider(getCredentials())
         .build();
   }
 
   @Bean
   public S3Presigner getPreSigner() {
-    AwsCredentialsProvider awsCredentialsProvider = StaticCredentialsProvider.create(AwsSessionCredentials.create(accessKey, secretKey, sessionToken));
     return S3Presigner.builder()
         .region(Region.of(region))
-        .credentialsProvider(awsCredentialsProvider)
+        .credentialsProvider(getCredentials())
         .s3Client(getClient())
         .build();
   }
@@ -60,12 +57,16 @@ public class AwsVideoServiceConfig {
 
   @Bean
   public SqsAsyncClient sqsAsyncClient() {
-    AwsSessionCredentials credentials = AwsSessionCredentials.create(accessKey, secretKey, sessionToken);
     return SqsAsyncClient.builder()
-        .credentialsProvider( StaticCredentialsProvider.create(credentials))
+        .credentialsProvider(getCredentials())
         .region(Region.of(region))
         .endpointOverride(URI.create(queueUrl))
         .build();
+  }
+
+  public StaticCredentialsProvider getCredentials() {
+    AwsSessionCredentials credentials = AwsSessionCredentials.create(accessKey, secretKey, sessionToken);
+    return StaticCredentialsProvider.create(credentials);
   }
 
 }
