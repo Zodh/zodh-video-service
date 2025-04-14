@@ -39,8 +39,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USER }}/zodh-video-service:latest
-            ${{ secrets.DOCKERHUB_USER }}/zodh-video-service:${{ github.sha }}
+            zodh/zodh-video-service:latest
+            zodh/zodh-video-service:${{ github.sha }}
 
       - name: "Saindo do Dockerhub"
         run: docker logout
@@ -82,4 +82,4 @@ jobs:
 
       - name: "Atualiza versao da imagem no k8s"
         run: |
-          kubectl set image deployment/zodh-video-service zodh-video-service=${{ secrets.DOCKERHUB_USER }}/zodh-video-service:${{ github.sha }} --record
+          kubectl set image deployment/zodh-video-service zodh-video-service=zodh/zodh-video-service:${{ github.sha }} --record
