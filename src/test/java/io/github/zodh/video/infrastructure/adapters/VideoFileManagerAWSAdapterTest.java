@@ -52,13 +52,15 @@ class VideoFileManagerAWSAdapterTest {
   private VideoCutterJpaRepository videoCutterJpaRepository;
   @Mock
   private AwsVideoServiceConfig awsVideoServiceConfig;
+  @Mock
+  private EmailSenderSpringAdapter emailSenderSpringAdapter;
   @Spy
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
   void setup() {
     lenient().when(awsVideoServiceConfig.getPreSigner()).thenReturn(s3Presigner);
-    this.videoFileManagerAWSAdapter = new VideoFileManagerAWSAdapter(awsVideoServiceConfig, videoCutterJpaRepository, objectMapper);
+    this.videoFileManagerAWSAdapter = new VideoFileManagerAWSAdapter(awsVideoServiceConfig, videoCutterJpaRepository, objectMapper, emailSenderSpringAdapter);
     ReflectionTestUtils.setField(videoFileManagerAWSAdapter, "bucketName", "raw-videos");
     ReflectionTestUtils.setField(videoFileManagerAWSAdapter, "uploadLinkDurationInMinutes", "5");
     ReflectionTestUtils.setField(videoFileManagerAWSAdapter, "uploadExpirationTime", 5);

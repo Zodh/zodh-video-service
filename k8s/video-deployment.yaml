@@ -18,6 +18,11 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zodh-video-service-secret
+                  key: MAIL_PASSWORD
             - name: VIDEO_DATABASE_USER
               valueFrom:
                 secretKeyRef:
