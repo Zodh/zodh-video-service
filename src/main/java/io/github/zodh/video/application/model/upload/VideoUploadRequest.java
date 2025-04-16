@@ -4,6 +4,6 @@ import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
 public record VideoUploadRequest(String email, UUID userId, int cutIntervalInSeconds,
-                                 String videoName, String format, long sizeInBytes, MultipartFile multipartFile) {
+                                 String videoName, String format, long sizeInBytes, String contentType) {
 
 }

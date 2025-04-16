@@ -10,7 +10,12 @@ import io.github.zodh.video.application.service.VideoUploadUseCase;
 import io.github.zodh.video.infrastructure.adapters.VideoRepositoryJpaAdapter;
 import io.github.zodh.video.infrastructure.adapters.VideoFileManagerAWSAdapter;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.UUID;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/videos")
@@ -41,22 +45,35 @@ public class VideoApi {
   public ResponseEntity<VideoUploadResponse> uploadVideoToCut(
       @RequestHeader(name = "x-user-id") UUID userId,
       @RequestHeader(name = "x-user-email") String email,
-      @RequestParam MultipartFile multipartFile,
       HttpServletRequest request
-  ) {
-    String filename = multipartFile.getOriginalFilename();
-    int cutIntervalInSeconds = getIntFromStringParam(request.getParameter("cutIntervalInSeconds"));
-    VideoUploadRequest videoUploadRequest = new VideoUploadRequest(email, userId, cutIntervalInSeconds, filename,
-        FilenameUtils.getExtension(filename), multipartFile.getSize(), multipartFile);
-    return ResponseEntity.status(HttpStatus.CREATED).body(videoController.upload(videoUploadRequest));
-  }
-
-  private int getIntFromStringParam(String param) {
-    try {
-      return Integer.parseInt(param);
-    } catch (RuntimeException e) {
-      return 0;
+  ) throws FileUploadException {
+    boolean isMultipart = JakartaServletFileUpload.isMultipartContent(request);
+    if (!isMultipart) {
+      return ResponseEntity.badRequest().build();
     }
+    JakartaServletFileUpload upload = new JakartaServletFileUpload<>();
+    List<FileItem> items = upload.parseRequest(request);
+    Integer cutIntervalInSeconds = 0;
+    String uploadedFileName = null;
+    long uploadedFileSize = -1;
+    String contentType = "mp4";
+    for (FileItem item : items) {
+      if (item.isFormField()) {
+        if ("cutIntervalInSeconds".equals(item.getFieldName())) {
+          cutIntervalInSeconds = Integer.parseInt(item.getString());
+        }
+      } else {
+        if ("multipartFile".equals(item.getFieldName())) {
+          uploadedFileName = item.getName();
+          uploadedFileSize = item.getSize();
+          contentType = item.getContentType();
+        }
+      }
+    }
+
+    VideoUploadRequest videoUploadRequest = new VideoUploadRequest(email, userId, cutIntervalInSeconds, uploadedFileName,
+        FilenameUtils.getExtension(uploadedFileName), uploadedFileSize, contentType);
+    return ResponseEntity.status(HttpStatus.CREATED).body(videoController.upload(videoUploadRequest));
   }
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

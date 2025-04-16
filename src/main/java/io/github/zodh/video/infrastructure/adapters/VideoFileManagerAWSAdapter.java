@@ -27,7 +27,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.eventnotifications.s3.model.S3EventNotification;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -58,7 +57,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
   }
 
   @Override
-  public GatewayUploadResponse generateUploadUrl(VideoCutter videoCutter, MultipartFile multipartFile) {
+  public GatewayUploadResponse generateUploadUrl(VideoCutter videoCutter, String contentType) {
     String fileId = String.valueOf(videoCutter.getCutIntervalInSeconds())
         .concat("-")
         .concat(UUID.randomUUID().toString())
@@ -67,7 +66,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
     Duration d = maxUploadDuration();
     PutObjectPresignRequest preSignRequest = PutObjectPresignRequest.builder()
         .signatureDuration(d)
-        .putObjectRequest(ur -> ur.bucket(bucketName).key(fileId).contentType(multipartFile.getContentType()))
+        .putObjectRequest(ur -> ur.bucket(bucketName).key(fileId).contentType(contentType))
         .build();
     PresignedPutObjectRequest preSignedUploadRequest = s3Presigner.presignPutObject(preSignRequest);
     return new GatewayUploadResponse(
