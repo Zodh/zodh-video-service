@@ -31,9 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.http.SdkHttpRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -52,13 +50,15 @@ class VideoFileManagerAWSAdapterTest {
   private VideoCutterJpaRepository videoCutterJpaRepository;
   @Mock
   private AwsVideoServiceConfig awsVideoServiceConfig;
+  @Mock
+  private EmailSenderSpringAdapter emailSenderSpringAdapter;
   @Spy
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
   void setup() {
     lenient().when(awsVideoServiceConfig.getPreSigner()).thenReturn(s3Presigner);
-    this.videoFileManagerAWSAdapter = new VideoFileManagerAWSAdapter(awsVideoServiceConfig, videoCutterJpaRepository, objectMapper);
+    this.videoFileManagerAWSAdapter = new VideoFileManagerAWSAdapter(awsVideoServiceConfig, videoCutterJpaRepository, objectMapper, emailSenderSpringAdapter);
     ReflectionTestUtils.setField(videoFileManagerAWSAdapter, "bucketName", "raw-videos");
     ReflectionTestUtils.setField(videoFileManagerAWSAdapter, "uploadLinkDurationInMinutes", "5");
     ReflectionTestUtils.setField(videoFileManagerAWSAdapter, "uploadExpirationTime", 5);
@@ -74,10 +74,9 @@ class VideoFileManagerAWSAdapterTest {
     User user = new User("test@test.com", userId);
     Video video = new Video( "example-video.mp4", "mp4", 5120L, user, sampleLdt, sampleLdt, VideoProcessingStatusEnum.FINISHED);
     VideoCutter videoCutter = new VideoCutter(video, 5);
-    MultipartFile multipartFile = new MockMultipartFile("example-video.mp4", new byte[5120]);
     when(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class)))
         .thenReturn(PresignedPutObjectRequest.builder().expiration(Instant.now()).isBrowserExecutable(true).signedHeaders(Map.of("test", List.of("test"))).httpRequest(SdkHttpRequest.builder().protocol("http").host("localhost").method(SdkHttpMethod.PUT).build()).build());
-    GatewayUploadResponse response = videoFileManagerAWSAdapter.generateUploadUrl(videoCutter, multipartFile);
+    GatewayUploadResponse response = videoFileManagerAWSAdapter.generateUploadUrl(videoCutter, "mp4");
     assertThat(response).isNotNull();
     assertThat(response.url()).isEqualTo("http://localhost");
     assertThat(response.method()).isEqualTo("PUT");

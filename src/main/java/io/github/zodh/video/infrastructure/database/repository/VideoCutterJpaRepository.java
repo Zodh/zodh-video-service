@@ -4,6 +4,7 @@ import io.github.zodh.video.domain.model.video.VideoProcessingStatusEnum;
 import io.github.zodh.video.infrastructure.database.entity.VideoCutterEntity;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +48,8 @@ public interface VideoCutterJpaRepository extends JpaRepository<VideoCutterEntit
       + "vce.lastUpdateDateTime = :updateDateTime "
       + "WHERE vce.id IN (:videoIds)")
   void invalidateVideosToUpload(@Param("videoIds") List<Long> videoIds, @Param("updateDateTime") LocalDateTime updateDateTime);
+
+  Optional<VideoCutterEntity> findByFileId(String fileId);
 
   @Modifying
   @Query(value = "UPDATE VideoCutterEntity vce "

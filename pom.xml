@@ -46,6 +46,8 @@
     <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
     <org.projectlombok.version>1.18.36</org.projectlombok.version>
     <io.jsonwebtoken.version>0.12.6</io.jsonwebtoken.version>
+    <org.springframework.context.version>6.2.5</org.springframework.context.version>
+    <commons-fileupload.version>2.0.0-M1</commons-fileupload.version>
 
     <!-- JaCoCo -->
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
@@ -71,6 +73,10 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
 
     <!-- AWS -->
@@ -120,6 +126,11 @@
     <!-- General Dependencies -->
     <dependency>
       <groupId>org.apache.commons</groupId>
+      <artifactId>commons-fileupload2-jakarta</artifactId>
+      <version>${commons-fileupload.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${org.apache.commons.version}</version>
     </dependency>
@@ -152,6 +163,11 @@
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
       <version>${io.jsonwebtoken.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+      <version>${org.springframework.context.version}</version>
     </dependency>
 
     <!-- Test Dependencies -->
@@ -191,6 +207,9 @@
             <!-- Runner Code -->
             <exclude>
               io/github/zodh/video/ZodhVideoServiceApplication.class
+            </exclude>
+            <exclude>
+              io/github/zodh/video/infrastructure/web/**.class
             </exclude>
             <exclude>
               io/github/zodh/video/infrastructure/security/**.class

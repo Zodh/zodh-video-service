@@ -39,7 +39,7 @@ public class VideoUploadUseCase {
     Long videoCutterId = videoRepositoryGateway.save(videoCutter);
     videoCutter.setIdentifier(videoCutterId);
 
-    GatewayUploadResponse uploadResponse = videoFileManagerGateway.generateUploadUrl(videoCutter, request.multipartFile());
+    GatewayUploadResponse uploadResponse = videoFileManagerGateway.generateUploadUrl(videoCutter, request.contentType());
     videoRepositoryGateway.saveFileId(videoCutter.getIdentifier(), uploadResponse.fileId());
     video.updateStatus(VideoProcessingStatusEnum.AWAITING_UPLOAD);
     videoRepositoryGateway.updateVideoStatus(uploadResponse.fileId(), video.getProcessingStatus());

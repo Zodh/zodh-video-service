@@ -44,13 +44,12 @@ class VideoUploadUseCaseTest {
     String format = "mp4";
     long sizeInBytes = 1024 * 5;
     byte[] fileBytes = new byte[1024*5];
-    MultipartFile mf = new MockMultipartFile(videoName, fileBytes);
 
 
     when(videoRepositoryGateway.save(any())).thenReturn(1L);
     when(videoFileManagerGateway.generateUploadUrl(any(), any()))
         .thenReturn(new GatewayUploadResponse("https://test-download.com", "PUT", "randomId", "1 minute"));
-    VideoUploadResponse result = videoUploadUseCase.execute(new VideoUploadRequest(email, userId, cutIntervalInSeconds, videoName, format, sizeInBytes, mf));
+    VideoUploadResponse result = videoUploadUseCase.execute(new VideoUploadRequest(email, userId, cutIntervalInSeconds, videoName, format, sizeInBytes, "mp4"));
 
     assertThat(result).isNotNull();
     assertThat(result.uploadUrl()).isEqualTo("https://test-download.com");

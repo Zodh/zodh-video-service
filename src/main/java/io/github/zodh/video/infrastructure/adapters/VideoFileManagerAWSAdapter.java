@@ -2,6 +2,7 @@ package io.github.zodh.video.infrastructure.adapters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.awspring.cloud.sqs.annotation.SqsListener;
+import io.github.zodh.video.application.gateway.EmailSenderGateway;
 import io.github.zodh.video.application.gateway.VideoFileManagerGateway;
 import io.github.zodh.video.application.model.upload.GatewayUploadResponse;
 import io.github.zodh.video.domain.model.video.VideoCutter;
@@ -22,16 +23,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import software.amazon.awssdk.services.sqs.model.Message;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.eventnotifications.s3.model.S3EventNotification;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import software.amazon.awssdk.services.sqs.model.Message;
 
 @Slf4j
 @Component
@@ -46,16 +46,18 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
   private final S3Presigner s3Presigner;
   private final VideoCutterJpaRepository videoCutterJpaRepository;
   private final ObjectMapper objectMapper;
+  private final EmailSenderGateway emailSenderGateway;
 
   @Autowired
-  public VideoFileManagerAWSAdapter(AwsVideoServiceConfig s3Config, VideoCutterJpaRepository videoCutterJpaRepository, ObjectMapper objectMapper) {
+  public VideoFileManagerAWSAdapter(AwsVideoServiceConfig s3Config, VideoCutterJpaRepository videoCutterJpaRepository, ObjectMapper objectMapper, EmailSenderSpringAdapter emailSenderGateway) {
     this.s3Presigner = s3Config.getPreSigner();
     this.videoCutterJpaRepository = videoCutterJpaRepository;
     this.objectMapper = objectMapper;
+    this.emailSenderGateway = emailSenderGateway;
   }
 
   @Override
-  public GatewayUploadResponse generateUploadUrl(VideoCutter videoCutter, MultipartFile multipartFile) {
+  public GatewayUploadResponse generateUploadUrl(VideoCutter videoCutter, String contentType) {
     String fileId = String.valueOf(videoCutter.getCutIntervalInSeconds())
         .concat("-")
         .concat(UUID.randomUUID().toString())
@@ -64,7 +66,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
     Duration d = maxUploadDuration();
     PutObjectPresignRequest preSignRequest = PutObjectPresignRequest.builder()
         .signatureDuration(d)
-        .putObjectRequest(ur -> ur.bucket(bucketName).key(fileId).contentType(multipartFile.getContentType()))
+        .putObjectRequest(ur -> ur.bucket(bucketName).key(fileId).contentType(contentType))
         .build();
     PresignedPutObjectRequest preSignedUploadRequest = s3Presigner.presignPutObject(preSignRequest);
     return new GatewayUploadResponse(
@@ -95,7 +97,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
       updateVideoProcessingStatus(videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status(), videoStatusUpdateMessage.url());
       log.info("Video {} updated to status {} successfully!", videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status());
     } catch (Exception e) {
-      log.error("Error trying to process file update message!");
+      log.error("Error trying to process file update message! Message: " + e.getMessage(), e);
     }
   }
 
@@ -132,6 +134,24 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
       videoCutterJpaRepository.updateVideoCutterUrl(url, fileId, LocalDateTime.now());
     }
     videoCutterJpaRepository.updateVideoCutterProcessingStatus(fileId, status, LocalDateTime.now());
+    if (status.equals(VideoProcessingStatusEnum.FINISHED) || status.equals(VideoProcessingStatusEnum.ERROR)) {
+      var videoCutterEntity = videoCutterJpaRepository.findByFileId(fileId).orElseThrow(() -> new RuntimeException("Video not found!"));
+      String videoName = videoCutterEntity.getName();
+      String optLink = status.equals(VideoProcessingStatusEnum.FINISHED) ? String.format("Link para download: %s", url) : "";
+      emailSenderGateway.send(
+          "Processamento de frames",
+          """
+              Olá!
+                                \s
+              Somos a Zodh Video e estamos passando aqui pra informar que o status do vídeo '%s' foi atualizado!
+                                \s
+              Status atual: %s
+                                \s
+              %s
+             \s""".formatted(videoName, status.getDescription(), optLink),
+          videoCutterEntity.getUserEmail()
+      );
+    }
   }
 
   private Duration maxUploadDuration() {
