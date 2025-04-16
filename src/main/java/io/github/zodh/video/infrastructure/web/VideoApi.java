@@ -51,7 +51,8 @@ public class VideoApi {
     if (!isMultipart) {
       return ResponseEntity.badRequest().build();
     }
-    JakartaServletFileUpload upload = new JakartaServletFileUpload<>();
+    DiskFileItemFactory diskFileItemFactory = DiskFileItemFactory.builder().setBufferSize(1024 * 1024).get();
+    JakartaServletFileUpload upload = new JakartaServletFileUpload<>(diskFileItemFactory);
     List<FileItem> items = upload.parseRequest(request);
     Integer cutIntervalInSeconds = 0;
     String uploadedFileName = null;
