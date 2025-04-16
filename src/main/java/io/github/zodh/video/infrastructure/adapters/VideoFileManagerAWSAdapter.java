@@ -98,7 +98,7 @@ public class VideoFileManagerAWSAdapter implements VideoFileManagerGateway {
       updateVideoProcessingStatus(videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status(), videoStatusUpdateMessage.url());
       log.info("Video {} updated to status {} successfully!", videoStatusUpdateMessage.fileId(), videoStatusUpdateMessage.status());
     } catch (Exception e) {
-      log.error("Error trying to process file update message!");
+      log.error("Error trying to process file update message! Message: " + e.getMessage(), e);
     }
   }
 
