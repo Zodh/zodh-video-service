@@ -1,9 +1,10 @@
 package io.github.zodh.video.infrastructure.adapters;
 
 import io.github.zodh.video.application.gateway.EmailSenderGateway;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,9 +13,10 @@ public class EmailSenderSpringAdapter implements EmailSenderGateway {
   @Value("${video.service.email-origin}")
   private String originEmail;
 
-  private final JavaMailSender javaMailSender;
+  private final JavaMailSenderImpl javaMailSender;
 
-  public EmailSenderSpringAdapter(JavaMailSender javaMailSender) {
+  @Autowired
+  public EmailSenderSpringAdapter(JavaMailSenderImpl javaMailSender) {
     this.javaMailSender = javaMailSender;
   }
 
