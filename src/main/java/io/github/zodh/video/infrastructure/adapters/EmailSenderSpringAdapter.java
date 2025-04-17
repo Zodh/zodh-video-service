@@ -1,24 +1,20 @@
 package io.github.zodh.video.infrastructure.adapters;
 
 import io.github.zodh.video.application.gateway.EmailSenderGateway;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class EmailSenderSpringAdapter implements EmailSenderGateway {
 
   @Value("${video.service.email-origin}")
   private String originEmail;
 
   private final JavaMailSenderImpl javaMailSender;
-
-  @Autowired
-  public EmailSenderSpringAdapter(JavaMailSenderImpl javaMailSender) {
-    this.javaMailSender = javaMailSender;
-  }
 
   @Override
   public void send(String subject, String message, String target) {

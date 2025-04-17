@@ -33,7 +33,7 @@ public class JavaMailSenderConfiguration {
     props.put("mail.smtp.starttls.enable", "true");
     props.put("mail.debug", "true");
 
-    return new JavaMailSenderImpl();
+    return javaMailSender;
   }
 
 }
