@@ -40,7 +40,7 @@
     <io.awspring.cloud.version>3.3.0</io.awspring.cloud.version>
 
     <!-- Other Dependencies -->
-    <org.apache.commons.version>3.17.0</org.apache.commons.version>
+    <org.apache.commons.version>3.18.0</org.apache.commons.version>
     <io.commons.version>2.18.0</io.commons.version>
     <org.json.version>20250107</org.json.version>
     <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
