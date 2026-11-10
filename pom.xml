@@ -42,7 +42,7 @@
     <!-- Other Dependencies -->
     <org.apache.commons.version>3.17.0</org.apache.commons.version>
     <io.commons.version>2.18.0</io.commons.version>
-    <org.json.version>20250107</org.json.version>
+    <org.json.version>20260719</org.json.version>
     <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
     <org.projectlombok.version>1.18.36</org.projectlombok.version>
     <io.jsonwebtoken.version>0.12.6</io.jsonwebtoken.version>
